@@ -1,0 +1,12 @@
+/TestBench
+/ipch
+/.vs
+bin
+obj
+x32*
+x64*
+Certificate.bat
+*.exe
+*.txt
+*.user
+*.patch
