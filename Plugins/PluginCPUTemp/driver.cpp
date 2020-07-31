@@ -166,6 +166,7 @@ BOOL driver::InstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR Drive
 
 	return rCode;
 #else
+	EnableSeLoadDriverPrivilege();
 	hService = CreateService(hSCManager,DriverId,DriverId,SERVICE_ALL_ACCESS,SERVICE_KERNEL_DRIVER,SERVICE_DEMAND_START,SERVICE_ERROR_NORMAL,DriverPath,NULL,NULL,NULL,NULL,NULL);
 	if (hService == NULL)
 	{
