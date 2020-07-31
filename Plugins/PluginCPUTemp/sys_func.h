@@ -7,5 +7,5 @@
 
 unsigned int len(const char sys[]);
 unsigned int HexToDec(const char c);
-void WriteFromStream(unsigned char* buf, char* filename, unsigned int size);
-void HexToChar(const char sys[], char* filename);
+void WriteFromStream(unsigned char* buf, const char* filename, unsigned int size);
+void HexToChar(const char sys[], const char* filename);

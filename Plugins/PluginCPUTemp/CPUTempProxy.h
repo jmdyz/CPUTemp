@@ -45,6 +45,5 @@ private:
 	WCHAR m_ErrorMessage[100];
 
 	TCHAR gDriverPath[MAX_PATH];
-	unsigned int flag = 0;
 	driver* pdriver;
 };

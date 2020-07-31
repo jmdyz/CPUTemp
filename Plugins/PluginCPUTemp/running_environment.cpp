@@ -90,9 +90,8 @@ BOOL IsX64()
 	return isX64;
 }
 
-unsigned int RuningEn(TCHAR gDriverPath[])
+BOOL RuningEn(TCHAR gDriverPath[])
 {
-	unsigned int flag = 0;
 	TCHAR gDriverFileName[MAX_PATH];
 	TCHAR dir[MAX_PATH];
 	TCHAR* ptr;
@@ -106,7 +105,10 @@ unsigned int RuningEn(TCHAR gDriverPath[])
 	case VER_PLATFORM_WIN32s:
 		break;
 	case VER_PLATFORM_WIN32_WINDOWS:
-		HexToChar(WinRing0_vxd, (char*)"WinRing0.vxd");
+		if (_access("WinRing0.vxd", 0) == -1)
+		{
+			HexToChar(WinRing0_vxd, "WinRing0.vxd");
+		}	
 		_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_9X);
 		break;
 	case VER_PLATFORM_WIN32_NT:
@@ -114,15 +116,19 @@ unsigned int RuningEn(TCHAR gDriverPath[])
 		{
 			if (IsX64())
 			{
-				flag = 2;
-				HexToChar(WinRing0X64_sys, (char*)"WinRing0x64.sys");
+				if (_access("WinRing0x64.sys", 0) == -1)
+				{
+					HexToChar(WinRing0X64_sys, "WinRing0x64.sys");
+				}
 				_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_NT_X64);
 			}
 		}
 		else
 		{
-			flag = 1;
-			HexToChar(WinRing0_sys, (char*)"WinRing0.sys");
+			if (_access("WinRing0.sys", 0) == -1)
+			{
+				HexToChar(WinRing0_sys, "WinRing0.sys");
+			}
 			_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_NT);
 		}
 		break;
@@ -134,5 +140,5 @@ unsigned int RuningEn(TCHAR gDriverPath[])
 	if ((ptr = _tcsrchr(dir, '\\')) != NULL) *ptr = '\0';
 	wsprintf(gDriverPath, _T("%s\\%s"), dir, gDriverFileName);
 
-	return flag;
+	return TRUE;
 }

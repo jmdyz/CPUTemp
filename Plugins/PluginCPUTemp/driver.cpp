@@ -4,13 +4,7 @@
 driver::driver(LPCTSTR gDriverId, LPCTSTR gDriverPath) :DriverId(gDriverId), DriverPath(gDriverPath), gIsNT(IsNT()), gIsCpuid(IsCpuid())
 {
 	if (gIsCpuid) this->gIsMsr = IsMsr();
-#ifdef _DEBUG
-	time_t t = time(0);
-	char tmp[64];
-	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
-	fputs(tmp, fp);
-	fputs("调用构造函数->成功\n", fp);
-#endif
+
 	NewDriver();
 }
 
@@ -22,14 +16,12 @@ driver::~driver()
 		gHandle = INVALID_HANDLE_VALUE;
 	}
 	StopDriver(hSCManager, DriverId);
-	RemoveDriver(hSCManager, DriverId);
 }
 
 BOOL driver::NewDriver()
 {
 #ifdef _DEBUG
 	time_t t = time(0);
-	char tmp[64];
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
 	fputs(tmp, fp);
 	fputs("打开服务管理程序系统组件数据库->", fp);
@@ -51,15 +43,23 @@ BOOL driver::NewDriver()
 		}
 		StopDriver(hSCManager, DriverId);
 		RemoveDriver(hSCManager, DriverId);
-		InstallDriver(hSCManager, DriverId, DriverPath);
-		StartDriver(hSCManager, DriverId);
-		OpenDriver();
+		if (InstallDriver(hSCManager, DriverId, DriverPath))
+		{
+			if (!IsSystemInstallDriver(hSCManager, DriverId, DriverPath))
+			{
+				SystemInstallDriver(hSCManager, DriverId, DriverPath);
+			}
+			if (StartDriver(hSCManager, DriverId))
+			{
+				OpenDriver();
+			}
+		}
+		else return FALSE;
 	}
 	if (hSCManager != NULL) CloseServiceHandle(hSCManager);
 #else
-	hSCManager = OpenSCManager(NULL, //目标计算机名，NULL表示本地计算机
-		NULL, //服务管理程序系统组件数据库，可以设为SERVICES_ACTIVE_DATABASE，如果为NULL，表示默认打开SERVICES_ACTIVE_DATABASE（服务管理程序系统组件数据库）
-		SC_MANAGER_ALL_ACCESS); //对SCM的权限（最高权限）
+	hSCManager = OpenSCManager(NULL,NULL,SC_MANAGER_ALL_ACCESS);
+
 	if (hSCManager == NULL) return FALSE;
 
 	if (!OpenDriver())
@@ -71,20 +71,28 @@ BOOL driver::NewDriver()
 		}
 		StopDriver(hSCManager, DriverId);
 		RemoveDriver(hSCManager, DriverId);
-		InstallDriver(hSCManager, DriverId, DriverPath);
-		StartDriver(hSCManager, DriverId);
-		OpenDriver();
+		if (InstallDriver(hSCManager, DriverId, DriverPath))
+		{
+			if (!IsSystemInstallDriver(hSCManager, DriverId, DriverPath))
+			{
+				SystemInstallDriver(hSCManager, DriverId, DriverPath);
+			}
+			if (StartDriver(hSCManager, DriverId))
+			{
+				OpenDriver();
+			}
+		}
+		else return FALSE;
 	}
 	if (hSCManager != NULL) CloseServiceHandle(hSCManager);
 #endif
-	return 0;
+	return TRUE;
 }
 
 BOOL driver::OpenDriver()
 {
 #ifdef _DEBUG
 	time_t t = time(0);
-	char tmp[64];
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
 	fputs(tmp, fp);
 	fputs("创建驱动对象->", fp);
@@ -124,7 +132,7 @@ BOOL driver::InstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR Drive
 	DWORD		error = NO_ERROR;
 #ifdef _DEBUG
 	time_t t = time(0);
-	char tmp[64];
+
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
 	fputs(tmp, fp);
 	fputs("创建服务对象->", fp);
@@ -153,9 +161,8 @@ BOOL driver::InstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR Drive
 			rCode = TRUE;
 		}
 		fputs("失败", fp);
-		char c[64];
-		snprintf(c, sizeof(c), "(错误代码：%d)\n", error);
-		fputs(c, fp);
+		snprintf(tmp, sizeof(tmp), "(错误代码：%d)\n", error);
+		fputs(tmp, fp);
 	}
 	else
 	{
@@ -287,6 +294,100 @@ BOOL driver::StopDriver(SC_HANDLE hSCManager, LPCTSTR DriverId)
 	{
 		rCode = ControlService(hService, SERVICE_CONTROL_STOP, &serviceStatus);
 		CloseServiceHandle(hService);
+	}
+
+	return rCode;
+}
+
+BOOL driver::SystemInstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR DriverPath)
+{
+	SC_HANDLE	hService = NULL;
+	BOOL		rCode = FALSE;
+	DWORD		error = NO_ERROR;
+
+	hService = OpenService(hSCManager, DriverId, SERVICE_ALL_ACCESS);
+
+#ifdef _DEBUG
+	time_t t = time(0);
+	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
+	fputs(tmp, fp);
+	fputs("创建系统服务->", fp);
+
+	if (hService != NULL)
+	{
+		rCode = ChangeServiceConfig(hService,
+			SERVICE_KERNEL_DRIVER,
+			SERVICE_AUTO_START,
+			SERVICE_ERROR_NORMAL,
+			DriverPath,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL
+		);
+		error = GetLastError();
+		CloseServiceHandle(hService);
+	}
+
+	if (rCode)
+	{
+		fputs("成功\n", fp);
+	}
+	else
+	{
+		fputs("失败", fp);
+		snprintf(tmp, sizeof(tmp), "(错误代码：%d)\n", error);
+		fputs(tmp, fp);
+	}
+#else
+	if (hService != NULL)
+	{
+		rCode = ChangeServiceConfig(hService,
+			SERVICE_KERNEL_DRIVER,
+			SERVICE_AUTO_START,
+			SERVICE_ERROR_NORMAL,
+			DriverPath,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL
+		);
+		error = GetLastError();
+		CloseServiceHandle(hService);
+	}
+#endif // _DEBUG
+
+	return rCode;
+}
+
+BOOL driver::IsSystemInstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR DriverPath)
+{
+	SC_HANDLE				hService = NULL;
+	BOOL					rCode = FALSE;
+	DWORD					dwSize;
+	LPQUERY_SERVICE_CONFIG	lpServiceConfig;
+
+	hService = OpenService(hSCManager, DriverId, SERVICE_ALL_ACCESS);
+
+	if (hService != NULL)
+	{
+		QueryServiceConfig(hService, NULL, 0, &dwSize);
+		lpServiceConfig = (LPQUERY_SERVICE_CONFIG)HeapAlloc(GetProcessHeap(),
+			HEAP_ZERO_MEMORY, dwSize);
+		QueryServiceConfig(hService, lpServiceConfig, dwSize, &dwSize);
+
+		if (lpServiceConfig->dwStartType == SERVICE_AUTO_START)
+		{
+			rCode = TRUE;
+		}
+
+		CloseServiceHandle(hService);
+
+		HeapFree(GetProcessHeap(), HEAP_NO_SERIALIZE, lpServiceConfig);
 	}
 
 	return rCode;

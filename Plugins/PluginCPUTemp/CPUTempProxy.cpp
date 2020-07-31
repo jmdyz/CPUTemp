@@ -5,7 +5,7 @@ CoreTempProxy::CoreTempProxy(void)
 {
 	memset(&this->m_pCoreTempData, 0, sizeof(CoreTempSharedDataEx));
 
-	flag = RuningEn(gDriverPath);
+	RuningEn(gDriverPath);
 	
 	pdriver = new driver(OLS_DRIVER_ID, gDriverPath);
 
@@ -16,18 +16,6 @@ CoreTempProxy::CoreTempProxy(void)
 
 CoreTempProxy::~CoreTempProxy(void)
 {
-	switch (flag)
-	{
-	case 0:
-		remove((char*)"WinRing0.vxd");
-		break;
-	case 1:
-		remove((char*)"WinRing0.sys");
-		break;
-	case 2:
-		remove((char*)"WinRing0x64.sys");
-		break;
-	}
 	delete pdriver;
 }
 

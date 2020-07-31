@@ -52,7 +52,7 @@ unsigned int HexToDec(const char c)
     }
 }
 
-void WriteFromStream(unsigned char* buf, char* filename, unsigned int size)
+void WriteFromStream(unsigned char* buf, const char* filename, unsigned int size)
 {
     FILE* f;
     fopen_s(&f, filename, "wb+");
@@ -63,7 +63,7 @@ void WriteFromStream(unsigned char* buf, char* filename, unsigned int size)
     }
 }
 
-void HexToChar(const char sys[], char* filename)
+void HexToChar(const char sys[], const char* filename)
 {
     unsigned int size = len(sys);
     unsigned char* buf = new unsigned char[size];
@@ -83,4 +83,5 @@ void HexToChar(const char sys[], char* filename)
         }
     }
     WriteFromStream(buf, filename, --k);
+    delete[] buf;
 }

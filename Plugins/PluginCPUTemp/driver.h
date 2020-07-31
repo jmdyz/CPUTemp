@@ -37,10 +37,13 @@ private:
 	BOOL StartDriver(SC_HANDLE hSCManager, LPCTSTR DriverId);
 	BOOL StopDriver(SC_HANDLE hSCManager, LPCTSTR DriverId);
 	BOOL RemoveDriver(SC_HANDLE hSCManager, LPCTSTR DriverId);
+	BOOL SystemInstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR DriverPath);
+	BOOL IsSystemInstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR DriverPath);
 
 	BOOL EnableSeLoadDriverPrivilege();
 #ifdef _DEBUG
 	FILE* fp = fopen("log.txt", "a");
+	char tmp[64];
 #endif
 };
 
