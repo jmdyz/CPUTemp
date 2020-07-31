@@ -1,9 +1,0 @@
-﻿  Building 'KMDF Driver1' with toolset 'WindowsKernelModeDriver10.0' and the 'Universal' target platform.
-  OpenLibSys.c
-  KMDF Driver1.vcxproj -> C:\Users\Administrator\Desktop\driver\KMDF Driver1\Debug\KMDFDriver1.sys
-  Done Adding Additional Store
-  Successfully signed: C:\Users\Administrator\Desktop\driver\KMDF Driver1\Debug\KMDFDriver1.sys
-  
-  Driver is 'Universal'.
-  Inf2Cat task was skipped as there were no inf files to process
-  

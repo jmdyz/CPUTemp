@@ -1,14 +1,12 @@
 #pragma once
 
-#define DEBUG
-
 
 #include <windows.h>
 #include <winioctl.h>
 #include <tchar.h>
 #include "running_environment.h"
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #include <stdio.h>
 #include <time.h>
 #endif
@@ -41,7 +39,7 @@ private:
 	BOOL RemoveDriver(SC_HANDLE hSCManager, LPCTSTR DriverId);
 
 	BOOL EnableSeLoadDriverPrivilege();
-#ifdef DEBUG
+#ifdef _DEBUG
 	FILE* fp = fopen("log.txt", "a");
 #endif
 };

@@ -4,7 +4,7 @@
 driver::driver(LPCTSTR gDriverId, LPCTSTR gDriverPath) :DriverId(gDriverId), DriverPath(gDriverPath), gIsNT(IsNT()), gIsCpuid(IsCpuid())
 {
 	if (gIsCpuid) this->gIsMsr = IsMsr();
-#ifdef DEBUG
+#ifdef _DEBUG
 	time_t t = time(0);
 	char tmp[64];
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
@@ -27,7 +27,7 @@ driver::~driver()
 
 BOOL driver::NewDriver()
 {
-#ifdef DEBUG
+#ifdef _DEBUG
 	time_t t = time(0);
 	char tmp[64];
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
@@ -82,11 +82,13 @@ BOOL driver::NewDriver()
 
 BOOL driver::OpenDriver()
 {
+#ifdef _DEBUG
 	time_t t = time(0);
 	char tmp[64];
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
 	fputs(tmp, fp);
 	fputs("创建驱动对象->", fp);
+#endif
 	//创建或打开下列对象，并返回一个可以用来访问这些对象的句柄
 	gHandle = CreateFile(
 		_T("\\\\.\\") OLS_DRIVER_ID,//要打开的文件的名字
@@ -98,7 +100,7 @@ BOOL driver::OpenDriver()
 		NULL//如果不为零，则指定一个文件句柄。新文件将从这个文件中复制扩展属性
 	);
 	
-#ifdef DEBUG
+#ifdef _DEBUG
 	if (gHandle == INVALID_HANDLE_VALUE)
 	{
 		fputs("失败\n", fp);
@@ -120,7 +122,7 @@ BOOL driver::InstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR Drive
 	SC_HANDLE	hService = NULL;
 	BOOL        rCode = FALSE;
 	DWORD		error = NO_ERROR;
-#ifdef DEBUG
+#ifdef _DEBUG
 	time_t t = time(0);
 	char tmp[64];
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
@@ -192,7 +194,7 @@ BOOL driver::StartDriver(SC_HANDLE hSCManager, LPCTSTR DriverId)
 	DWORD		error = NO_ERROR;
 
 	hService = OpenService(hSCManager, DriverId, SERVICE_ALL_ACCESS);
-#ifdef DEBUG
+#ifdef _DEBUG
 	char tmp[64];
 	time_t t = time(0);
 	strftime(tmp, sizeof(tmp), "[%X]：", localtime(&t));
