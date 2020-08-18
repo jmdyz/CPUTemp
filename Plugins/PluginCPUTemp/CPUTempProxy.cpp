@@ -23,21 +23,25 @@ UINT CoreTempProxy::GetCoreLoad(int _index) const
 	return this->m_pCoreTempData.uiLoad[_index];
 }
 
+//得到CPU理论最高温度（已实现）
 UINT CoreTempProxy::GetTjMax() const
 {
 	return this->m_pCoreTempData.uiTjMax;
 }
 
+//得到CPU核心数（已实现）
 UINT CoreTempProxy::GetCoreCount() const
 {
 	return this->m_pCoreTempData.uiCoreCnt;
 }
 
+//得到CPU数量
 UINT CoreTempProxy::GetCPUCount() const
 {
 	return this->m_pCoreTempData.uiCPUCnt;
 }
 
+//得到单个CPU核心温度（已实现）
 UINT CoreTempProxy::GetTemp(int _index) const
 {
 	return this->m_pCoreTempData.uiTemp[_index];
@@ -63,6 +67,7 @@ float CoreTempProxy::GetMultiplier() const
 	return this->m_pCoreTempData.fMultiplier;
 }
 
+//得到CPU名称
 LPCSTR CoreTempProxy::GetCPUName() const
 {
 	return this->m_pCoreTempData.sCPUName;

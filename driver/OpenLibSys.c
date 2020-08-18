@@ -24,19 +24,18 @@ static ULONG refCount;
 //
 //-----------------------------------------------------------------------------
 
+
+/*
+Return Value:
+返回值：
+	STATUS_SUCCESS if the driver initialized correctly,otherwise an erroror indicating the reason for failure.
+	如果驱动程序初始化正确则STATUS_SUCCESS，否则抛出错误原因。
+*/
 NTSTATUS
 DriverEntry(
 	IN PDRIVER_OBJECT  DriverObject,
 	IN PUNICODE_STRING RegistryPath
 	)
-
-/*
-Return Value:
-
-	STATUS_SUCCESS if the driver initialized correctly,otherwise an erroror
-	indicating the reason for failure.
-*/
-
 {
 	NTSTATUS		status;
 	UNICODE_STRING  ntDeviceName;
@@ -138,11 +137,11 @@ OlsDispatch(
 	switch(pIrpStack->MajorFunction)
 	{
 		case IRP_MJ_CREATE:
-			if(refCount != (ULONG)-1){refCount++;}
+			if(refCount != (ULONG)-1) refCount++;
 			status = STATUS_SUCCESS;
 			break;
 		case IRP_MJ_CLOSE:
-			if(refCount != (ULONG)-1){refCount--;}
+			if(refCount != (ULONG)-1) refCount--;
 			status = STATUS_SUCCESS;
 			break;
 

@@ -8,9 +8,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#pragma warning(disable:4996)
-#pragma warning(disable:4201)
-#pragma warning(disable:4100)
+
 //-----------------------------------------------------------------------------
 //
 // The Device type codes form 32768 to 65535 are for customer use.
@@ -25,7 +23,6 @@
 //
 //-----------------------------------------------------------------------------
 
-#define OLS_DRIVER_ID							_T("CoreTemp0_1")
 
 #define OLS_DRIVER_MAJOR_VERSION				1
 #define OLS_DRIVER_MINOR_VERSION				2

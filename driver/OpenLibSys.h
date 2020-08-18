@@ -18,8 +18,8 @@
 //
 //-----------------------------------------------------------------------------
 
-#define NT_DEVICE_NAME	L"\\Device\\CoreTemp0_1"
-#define DOS_DEVICE_NAME	L"\\DosDevices\\CoreTemp0_1"
+#define NT_DEVICE_NAME	L"\\Device\\WinRing0_1_2_0"
+#define DOS_DEVICE_NAME	L"\\DosDevices\\WinRing0_1_2_0"
 
 //-----------------------------------------------------------------------------
 //
