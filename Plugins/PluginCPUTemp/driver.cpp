@@ -1,10 +1,13 @@
 #include "driver.h"
 
 
-driver::driver(LPCTSTR gDriverId, LPCTSTR gDriverPath) :DriverId(gDriverId), DriverPath(gDriverPath), gIsNT(IsNT()), gIsCpuid(IsCpuid())
+driver::driver(LPCTSTR gDriverId, LPCTSTR gDriverPath) :
+	DriverId(gDriverId),
+	DriverPath(gDriverPath),
+	gIsNT(IsNT()),
+	gIsCpuid(IsCpuid()),
+	gIsMsr((gIsCpuid) ? IsMsr() : FALSE)
 {
-	if (gIsCpuid) this->gIsMsr = IsMsr();
-
 	NewDriver();
 }
 
@@ -16,6 +19,7 @@ driver::~driver()
 		gHandle = INVALID_HANDLE_VALUE;
 	}
 	StopDriver(hSCManager, DriverId);
+	RemoveDriver(hSCManager, DriverId);
 }
 
 BOOL driver::NewDriver()
@@ -73,10 +77,10 @@ BOOL driver::NewDriver()
 		RemoveDriver(hSCManager, DriverId);
 		if (InstallDriver(hSCManager, DriverId, DriverPath))
 		{
-			if (!IsSystemInstallDriver(hSCManager, DriverId, DriverPath))
-			{
-				SystemInstallDriver(hSCManager, DriverId, DriverPath);
-			}
+			//if (!IsSystemInstallDriver(hSCManager, DriverId, DriverPath))
+			//{
+			//	SystemInstallDriver(hSCManager, DriverId, DriverPath);
+			//}
 			if (StartDriver(hSCManager, DriverId))
 			{
 				OpenDriver();
@@ -109,10 +113,12 @@ BOOL driver::OpenDriver()
 	);
 	
 #ifdef _DEBUG
+	DWORD error = GetLastError();
 	if (gHandle == INVALID_HANDLE_VALUE)
 	{
-		fputs("Ê§°Ü\n", fp);
-		return FALSE;
+		fputs("Ê§°Ü", fp);
+		snprintf(tmp, sizeof(tmp), "(´íÎó´úÂë£º%d)\n", error);
+		fputs(tmp, fp);
 	}
 	fputs("³É¹¦\n", fp);
 	return TRUE;
@@ -346,7 +352,7 @@ BOOL driver::SystemInstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTSTR
 	{
 		rCode = ChangeServiceConfig(hService,
 			SERVICE_KERNEL_DRIVER,
-			SERVICE_AUTO_START,
+			SERVICE_BOOT_START,
 			SERVICE_ERROR_NORMAL,
 			DriverPath,
 			NULL,
@@ -369,20 +375,23 @@ BOOL driver::IsSystemInstallDriver(SC_HANDLE hSCManager, LPCTSTR DriverId, LPCTS
 	SC_HANDLE				hService = NULL;
 	BOOL					rCode = FALSE;
 	DWORD					dwSize;
-	LPQUERY_SERVICE_CONFIG	lpServiceConfig;
+	LPQUERY_SERVICE_CONFIG	lpServiceConfig = NULL;
 
 	hService = OpenService(hSCManager, DriverId, SERVICE_ALL_ACCESS);
 
 	if (hService != NULL)
 	{
-		QueryServiceConfig(hService, NULL, 0, &dwSize);
-		lpServiceConfig = (LPQUERY_SERVICE_CONFIG)HeapAlloc(GetProcessHeap(),
-			HEAP_ZERO_MEMORY, dwSize);
-		QueryServiceConfig(hService, lpServiceConfig, dwSize, &dwSize);
-
-		if (lpServiceConfig->dwStartType == SERVICE_AUTO_START)
+		if (QueryServiceConfig(hService, NULL, 0, &dwSize) == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
 		{
-			rCode = TRUE;
+			lpServiceConfig = (LPQUERY_SERVICE_CONFIG)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwSize);
+		}
+
+		if (QueryServiceConfig(hService, lpServiceConfig, dwSize, &dwSize) && lpServiceConfig)
+		{
+			if (lpServiceConfig->dwStartType == SERVICE_AUTO_START)
+			{
+				rCode = TRUE;
+			}
 		}
 
 		CloseServiceHandle(hService);

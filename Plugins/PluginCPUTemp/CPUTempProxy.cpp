@@ -3,7 +3,6 @@
 
 CoreTempProxy::CoreTempProxy(void)
 {
-	memset(&this->m_pCoreTempData, 0, sizeof(CoreTempSharedDataEx));
 
 	RuningEn(gDriverPath);
 	
@@ -109,15 +108,7 @@ float CoreTempProxy::GetMultiplier(int _index) const
 	return this->m_pCoreTempData.fMultipliers[_index];
 }
 
-const CoreTempSharedDataEx &CoreTempProxy::GetDataStruct() const
-{
-	return this->m_pCoreTempData;
-}
 
-bool CoreTempProxy::GetData()
-{
-	return this->m_SharedMem.ReadSharedMem(&this->m_pCoreTempData);
-}
 
 void CoreTempProxy::_GetCoreCount()
 {

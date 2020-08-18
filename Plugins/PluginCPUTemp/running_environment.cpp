@@ -63,7 +63,12 @@ BOOL IsMsr()
 BOOL IsWow64()
 {
 	BOOL isWow64 = FALSE;
-	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process");
+	LPFN_ISWOW64PROCESS fnIsWow64Process = NULL;
+	HMODULE hModule = GetModuleHandle(_T("kernel32"));
+	if (hModule != NULL)
+	{
+		fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(hModule, "IsWow64Process");
+	}
 
 	if (fnIsWow64Process != NULL)
 	{
@@ -80,7 +85,12 @@ BOOL IsX64()
 {
 	SYSTEM_INFO systemInfo;
 	BOOL isX64 = FALSE;
-	LPFN_GETNATIVESYSTEMINFO fnGetNativeSystemInfo = (LPFN_GETNATIVESYSTEMINFO)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetNativeSystemInfo");
+	LPFN_GETNATIVESYSTEMINFO fnGetNativeSystemInfo = NULL;
+	HMODULE hModule = GetModuleHandle(_T("kernel32"));
+	if (hModule != NULL)
+	{
+		fnGetNativeSystemInfo = (LPFN_GETNATIVESYSTEMINFO)GetProcAddress(hModule, "GetNativeSystemInfo");
+	}
 
 	if (fnGetNativeSystemInfo != NULL)
 	{
