@@ -262,9 +262,11 @@ OlsDispatch(
 	}
 
 	// We're done with I/O request.  Record the status of the I/O action.
+	// I/O请求已完成。记录I/O操作的状态。
 	pIrp->IoStatus.Status = status;
 
 	// Don't boost priority when returning since this took little time.
+	// 返回时不要提高优先级，因为这只需要很少的时间。
 	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 
 	return status;
@@ -470,8 +472,7 @@ ReadPciConfig(	void	*lpInBuffer,
 	}
 	param = (OLS_READ_PCI_CONFIG_INPUT *)lpInBuffer;
 
-	status = pciConfigRead(param->PciAddress, param->PciOffset,
-						lpOutBuffer, nOutBufferSize);
+	status = pciConfigRead(param->PciAddress, param->PciOffset, lpOutBuffer, nOutBufferSize);
 
 	if(status == STATUS_SUCCESS)
 	{
@@ -527,8 +528,7 @@ NTSTATUS pciConfigRead(ULONG pciAddress, ULONG offset, void *data, int length)
 	slot.u.AsULONG = 0;
 	slot.u.bits.DeviceNumber = PciGetDev(pciAddress);
 	slot.u.bits.FunctionNumber = PciGetFunc(pciAddress);
-	error =	HalGetBusDataByOffset(PCIConfiguration, busNumber, slot.u.AsULONG,
-									data, offset, length);
+	error = HalGetBusDataByOffset(PCIConfiguration, busNumber, slot.u.AsULONG, data, offset, length);
 
 	if(error == 0)
 	{

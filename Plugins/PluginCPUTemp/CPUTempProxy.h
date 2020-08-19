@@ -1,5 +1,6 @@
 #pragma once
 #include "driver.h"
+#include "running_environment.h"
 #include "../../Library/Export.h"
 
 #define UNKNOWN_EXCEPTION 0x20000000
@@ -62,7 +63,7 @@ private:
 	} m_pCoreTempData;
 
 	WCHAR m_ErrorMessage[100];
-
+	INT gIsAMD = FALSE;
 	TCHAR gDriverPath[MAX_PATH];
 	driver* pdriver;
 };

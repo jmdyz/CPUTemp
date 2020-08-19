@@ -3,14 +3,18 @@
 
 CoreTempProxy::CoreTempProxy(void)
 {
-
+	gIsAMD = (IsCpuid()) ? IsAMD() : FALSE;
+	
 	RuningEn(gDriverPath);
 	
 	pdriver = new driver(OLS_DRIVER_ID, gDriverPath);
 
 	_GetCoreCount();
 
-	_GetTjMax();
+	if (!gIsAMD)
+	{
+		_GetTjMax();
+	}
 }
 
 CoreTempProxy::~CoreTempProxy(void)
@@ -131,9 +135,17 @@ void CoreTempProxy::_GetTjMax()
 
 void CoreTempProxy::_GetTemp(int _index)
 {
-	DWORD eax = 0, edx = 0;
-	pdriver->RdmsrTx(0x19C, &eax, &edx, _index);
-	m_pCoreTempData.uiTemp[_index] = m_pCoreTempData.uiTjMax - ((eax & 0x7f0000) >> 16);
+	if (gIsAMD)
+	{
+		m_pCoreTempData.uiTemp[_index] = pdriver->GetTemp(_index);
+	}
+	else
+	{
+		DWORD eax = 0, edx = 0;
+		pdriver->RdmsrTx(0x19C, &eax, &edx, _index);
+		m_pCoreTempData.uiTemp[_index] = m_pCoreTempData.uiTjMax - ((eax & 0x7f0000) >> 16);
+	}
+
 }
 
 LPCWSTR CoreTempProxy::GetErrorMessage()

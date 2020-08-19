@@ -44,6 +44,14 @@ BOOL IsCpuid()
 	return TRUE;
 }
 
+BOOL IsAMD()
+{
+	int info[4];
+	__cpuid(info, 0x80000005);
+	int ans = info[0] | info[1] | info[2] | info[3];
+	return ans;
+}
+
 /*
 判断是否支持 RDMSR 和 WRMSR
 */

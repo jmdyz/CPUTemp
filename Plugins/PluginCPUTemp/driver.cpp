@@ -458,6 +458,210 @@ BOOL WINAPI driver::RdmsrTx(DWORD index, PDWORD eax, PDWORD edx, DWORD_PTR threa
 	return result;
 }
 
+BOOL driver::pciConfigRead(DWORD pciAddress, DWORD regAddress, PBYTE value, DWORD size, PDWORD error)
+{
+	if (gHandle == INVALID_HANDLE_VALUE)
+	{
+		return FALSE;
+	}
+	if (value == NULL)
+	{
+		return FALSE;
+	}
+	// alignment check
+	if (size == 2 && (regAddress & 1) != 0)
+	{
+		return FALSE;
+	}
+	if (size == 4 && (regAddress & 3) != 0)
+	{
+		return FALSE;
+	}
+
+	DWORD	returnedLength = 0;
+	BOOL	result = FALSE;
+	OLS_READ_PCI_CONFIG_INPUT inBuf;
+
+	inBuf.PciAddress = pciAddress;
+	inBuf.PciOffset = regAddress;
+
+	result = DeviceIoControl(
+		gHandle,
+		IOCTL_OLS_READ_PCI_CONFIG,
+		&inBuf,
+		sizeof(inBuf),
+		value,
+		size,
+		&returnedLength,
+		NULL
+	);
+
+	if (error != NULL)
+	{
+		*error = GetLastError();
+	}
+
+	if (result)
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+DWORD WINAPI driver::ReadPciConfigDword(DWORD pciAddress, BYTE regAddress)
+{
+	DWORD ret;
+	if (pciConfigRead(pciAddress, regAddress, (PBYTE)&ret, sizeof(ret), NULL))
+	{
+		return ret;
+	}
+	else
+	{
+		return 0xFFFFFFFF;
+	}
+}
+
+DWORD WINAPI driver::ReadIoPortDword(WORD port)
+{
+	if (gHandle == INVALID_HANDLE_VALUE)
+	{
+		return 0;
+	}
+
+	DWORD	returnedLength = 0;
+	BOOL	result = FALSE;
+	DWORD	port4 = port;
+	DWORD	value = 0;
+
+	result = DeviceIoControl(
+		gHandle,
+		IOCTL_OLS_READ_IO_PORT_DWORD,
+		&port4,
+		sizeof(port4),	// required 4 bytes
+		&value,
+		sizeof(value),
+		&returnedLength,
+		NULL
+	);
+
+	return value;
+}
+
+BOOL WINAPI driver::WriteIoPortDword(WORD port, DWORD value)
+{
+	if (gHandle == INVALID_HANDLE_VALUE) return FALSE;
+
+	DWORD	returnedLength = 0;
+	BOOL	result = FALSE;
+	DWORD   length = 0;
+	OLS_WRITE_IO_PORT_INPUT inBuf;
+
+	inBuf.LongData = value;
+	inBuf.PortNumber = port;
+	length = offsetof(OLS_WRITE_IO_PORT_INPUT, CharData) +
+		sizeof(inBuf.LongData);
+
+	result = DeviceIoControl(
+		gHandle,
+		IOCTL_OLS_WRITE_IO_PORT_DWORD,
+		&inBuf,
+		length,
+		NULL,
+		0,
+		&returnedLength,
+		NULL
+	);
+	if (result) return TRUE;
+	else return FALSE;
+}
+
+BOOL driver::get_bus_dev(UINT devieid, INT* BUS, INT* DEV)
+{
+	UINT address, value;
+	for (UINT bus = 0; bus < 128; bus++)
+	{
+		for (UINT dev = 0; dev < 32; dev++)
+		{
+			for (UINT func = 0; func < 8; func++)
+			{
+				address = PciBusDevFunc(bus, dev, func);
+				value = ReadPciConfigDword(address, 0x00);
+				if (value == devieid)
+				{
+					*BUS = bus;
+					*DEV = dev;
+					return TRUE;
+				}
+			}
+		}
+	}
+	return FALSE;
+}
+
+DWORD driver::get_temp()
+{
+	INT bus, dev;
+	if (!get_bus_dev(0x1103, &bus, &dev))
+	{
+		return FALSE;
+	}
+
+	UINT slot = DeviceSlot(dev, 0x3);
+	UINT IO_ADDRE = GetDevice(bus, slot, 0xE4);
+	
+	DWORD CPUTemp;
+
+	if (WriteIoPortDword(0xCF8, IO_ADDRE)) CPUTemp = ReadIoPortDword(0xCFC);
+
+	INT CPUInfo[4], g_Offset, K;
+
+	__cpuid(CPUInfo,1);
+	INT t = CPUInfo[0];
+	INT family = ((t >> 20) & 0xFF) + ((t >> 8) & 0xF), model = ((t >> 12) & 0xF0) + ((t >> 4) & 0xF), stepping = t & 0xF;
+
+	if (family == 0xF && !(((model == 4) && (stepping == 0)) || ((model == 5) && (stepping <= 1)))) K = 8;
+	if (family > 0xF) K = 10;
+
+	if (model >= 0x69 && model != 0xc1 && model != 0x6c && model != 0x7c) g_Offset = 49 - 21;
+	else g_Offset = 49;
+
+	CPUTemp = (CPUTemp >> 16) & 0xFF;
+
+	if (K == 8) CPUTemp -= g_Offset;
+	if (K == 10) CPUTemp /= 8;
+
+	return CPUTemp;
+}
+
+DWORD driver::GetTemp(DWORD_PTR threadAffinityMask)
+{
+	DWORD		result = FALSE;
+	DWORD_PTR	mask = 0;
+	HANDLE		hThread = NULL;
+
+	if (gIsNT)
+	{
+		hThread = GetCurrentThread();
+		mask = SetThreadAffinityMask(hThread, threadAffinityMask);
+		if (mask == 0)
+		{
+			return FALSE;
+		}
+	}
+
+	result = get_temp();
+
+	if (gIsNT)
+	{
+		SetThreadAffinityMask(hThread, mask);
+	}
+
+	return result;
+}
+
 BOOL driver::EnableSeLoadDriverPrivilege()
 {
 	HANDLE hToken;
