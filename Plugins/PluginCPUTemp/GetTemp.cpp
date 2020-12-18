@@ -10,7 +10,7 @@ BOOL get_bus_dev(UINT devieid, INT* BUS, INT* DEV)
 			for (UINT func = 0; func < 8; func++)
 			{
 				address = PciBusDevFunc(bus, dev, func);
-				value = ReadPciConfigDword(address, 0x00);
+				value = DriverFunc(READ_PCI_CONFIG_DWORD,0,0,0,0,address,0x00);
 				if (value == devieid)
 				{
 					*BUS = bus;
@@ -35,8 +35,8 @@ DWORD get_temp()
 	UINT IO_ADDRE = GetDevice(bus, slot, 0xE4);
 
 	DWORD CPUTemp = 0;
-
-	if (WriteIoPortDword(0xCF8, IO_ADDRE)) CPUTemp = ReadIoPortDword(0xCFC);
+	
+	if (DriverFunc(WRITE_IO_PORT_DWORD, 0, 0, 0, 0, 0, 0, 0xCF8, IO_ADDRE)) CPUTemp = DriverFunc(READ_IO_PORT_DWORD, 0, 0, 0, 0, 0, 0, 0xCFC, IO_ADDRE);
 
 	INT CPUInfo[4], g_Offset, K = 0;
 
@@ -87,7 +87,7 @@ DWORD GetAMDTemp(DWORD_PTR threadAffinityMask)
 int _GetTjMax()
 {
 	DWORD eax = 0, edx = 0;
-	Rdmsr(0x1A2, &eax, &edx);
+	DriverFunc(RD_MSR,0x1A2, &eax, &edx);
 	return (eax & 0xff0000) >> 16;
 }
 
@@ -103,7 +103,7 @@ int _GetTemp(int _index)
 	{
 		if (!IsMsr()) return 0;
 		DWORD eax = 0, edx = 0;
-		RdmsrTx(0x19C, &eax, &edx, _index);
+		DriverFunc(RD_MSR_TX, 0x19C, &eax, &edx, _index);
 		return _GetTjMax() - ((eax & 0x7f0000) >> 16);
 	}
 }
