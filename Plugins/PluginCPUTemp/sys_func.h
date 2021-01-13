@@ -3,9 +3,10 @@
 #include <iostream>
 #include <fstream>
 #include <bitset>
+#include <Windows.h>
 #include <stdio.h>
 
-unsigned int len(const char sys[]);
-unsigned int HexToDec(const char c);
+#include "resource.h"
+
 void WriteFromStream(unsigned char* buf, const char* filename, unsigned int size);
-void HexToChar(const char sys[], const char* filename);
+bool resource_release(const char* filename);

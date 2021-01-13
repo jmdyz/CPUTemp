@@ -22,8 +22,8 @@
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DriverFunc.h" />
     <ClInclude Include="GetTemp.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="running_environment.h" />
-    <ClInclude Include="sys.h" />
     <ClInclude Include="sys_func.h" />
   </ItemGroup>
   <ItemGroup>
@@ -33,7 +33,6 @@
     <ClCompile Include="GetTemp.cpp" />
     <ClCompile Include="PluginCPUTemp.cpp" />
     <ClCompile Include="running_environment.cpp" />
-    <ClCompile Include="sys.cpp" />
     <ClCompile Include="sys_func.cpp" />
   </ItemGroup>
   <ItemGroup>
