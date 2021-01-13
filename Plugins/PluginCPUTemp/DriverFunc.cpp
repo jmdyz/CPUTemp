@@ -1,7 +1,13 @@
 #include "DriverFunc.h"
 
-BOOL WINAPI Rdmsr(DWORD index, PDWORD eax, PDWORD edx, HANDLE gHandle)
+BOOL WINAPI Rdmsr(DWORD index, PDWORD eax, PDWORD edx)
 {
+	TCHAR gDriverPath[MAX_PATH];
+	RuningEn(gDriverPath);
+	Driver* pDriver = new Driver(OLS_DRIVER_ID, gDriverPath);
+	HANDLE	gHandle = pDriver->GetHandle();
+	if (gHandle == INVALID_HANDLE_VALUE) return FALSE;
+
 	if (eax == NULL || edx == NULL) return FALSE;
 
 	DWORD	returnedLength = 0;
@@ -19,6 +25,8 @@ BOOL WINAPI Rdmsr(DWORD index, PDWORD eax, PDWORD edx, HANDLE gHandle)
 		NULL					// （可选）指向OVERLAPPED结构的指针。
 	);
 
+	delete pDriver;
+
 	if (result)
 	{
 		memcpy(eax, outBuf, 4);
@@ -28,7 +36,7 @@ BOOL WINAPI Rdmsr(DWORD index, PDWORD eax, PDWORD edx, HANDLE gHandle)
 	else return FALSE;
 }
 
-BOOL WINAPI RdmsrTx(DWORD index, PDWORD eax, PDWORD edx, DWORD_PTR threadAffinityMask, HANDLE gHandle)
+BOOL WINAPI RdmsrTx(DWORD index, PDWORD eax, PDWORD edx, DWORD_PTR threadAffinityMask)
 {
 	BOOL		result = FALSE;
 	DWORD_PTR	mask = 0;
@@ -38,16 +46,21 @@ BOOL WINAPI RdmsrTx(DWORD index, PDWORD eax, PDWORD edx, DWORD_PTR threadAffinit
 	mask = SetThreadAffinityMask(hThread, threadAffinityMask);
 	if (mask == 0) return FALSE;
 
-	result = Rdmsr(index, eax, edx, gHandle);
+	result = Rdmsr(index, eax, edx);
 
 	if (hThread) SetThreadAffinityMask(hThread, mask);
 
 	return result;
 }
 
-BOOL pciConfigRead(DWORD pciAddress, DWORD regAddress, PBYTE value, DWORD size, PDWORD error, HANDLE gHandle)
+BOOL pciConfigRead(DWORD pciAddress, DWORD regAddress, PBYTE value, DWORD size, PDWORD error)
 {
-	if (value == NULL || (size == 2 && (regAddress & 1) != 0) || (size == 4 && (regAddress & 3) != 0))
+	TCHAR gDriverPath[MAX_PATH];
+	RuningEn(gDriverPath);
+	Driver* pDriver = new Driver(OLS_DRIVER_ID, gDriverPath);
+	HANDLE	gHandle = pDriver->GetHandle();
+
+	if (gHandle == INVALID_HANDLE_VALUE || value == NULL || (size == 2 && (regAddress & 1) != 0) || (size == 4 && (regAddress & 3) != 0))
 	{
 		return FALSE;
 	}
@@ -70,6 +83,8 @@ BOOL pciConfigRead(DWORD pciAddress, DWORD regAddress, PBYTE value, DWORD size, 
 		NULL
 	);
 
+	delete pDriver;
+
 	if (error != NULL)
 	{
 		*error = GetLastError();
@@ -79,10 +94,10 @@ BOOL pciConfigRead(DWORD pciAddress, DWORD regAddress, PBYTE value, DWORD size, 
 	else return FALSE;
 }
 
-DWORD WINAPI ReadPciConfigDword(DWORD pciAddress, BYTE regAddress, HANDLE gHandle)
+DWORD WINAPI ReadPciConfigDword(DWORD pciAddress, BYTE regAddress)
 {
 	DWORD ret;
-	if (pciConfigRead(pciAddress, regAddress, (PBYTE)&ret, sizeof(ret), NULL, gHandle))
+	if (pciConfigRead(pciAddress, regAddress, (PBYTE)&ret, sizeof(ret), NULL))
 	{
 		return ret;
 	}
@@ -92,8 +107,18 @@ DWORD WINAPI ReadPciConfigDword(DWORD pciAddress, BYTE regAddress, HANDLE gHandl
 	}
 }
 
-DWORD WINAPI ReadIoPortDword(WORD port, HANDLE gHandle)
+DWORD WINAPI ReadIoPortDword(WORD port)
 {
+	TCHAR gDriverPath[MAX_PATH];
+	RuningEn(gDriverPath);
+	Driver* pDriver = new Driver(OLS_DRIVER_ID, gDriverPath);
+	HANDLE	gHandle = pDriver->GetHandle();
+
+	if (gHandle == INVALID_HANDLE_VALUE)
+	{
+		return 0;
+	}
+
 	DWORD	returnedLength = 0;
 	BOOL	result = FALSE;
 	DWORD	port4 = port;
@@ -110,11 +135,20 @@ DWORD WINAPI ReadIoPortDword(WORD port, HANDLE gHandle)
 		NULL
 	);
 
+	delete pDriver;
+
 	return value;
 }
 
-BOOL WINAPI WriteIoPortDword(WORD port, DWORD value, HANDLE gHandle)
+BOOL WINAPI WriteIoPortDword(WORD port, DWORD value)
 {
+	TCHAR gDriverPath[MAX_PATH];
+	RuningEn(gDriverPath);
+	Driver* pDriver = new Driver(OLS_DRIVER_ID, gDriverPath);
+	HANDLE	gHandle = pDriver->GetHandle();
+
+	if (gHandle == INVALID_HANDLE_VALUE) return FALSE;
+
 	DWORD	returnedLength = 0;
 	BOOL	result = FALSE;
 	DWORD   length = 0;
@@ -135,38 +169,8 @@ BOOL WINAPI WriteIoPortDword(WORD port, DWORD value, HANDLE gHandle)
 		NULL
 	);
 
+	delete pDriver;
+
 	if (result) return TRUE;
 	else return FALSE;
-}
-
-BOOL DriverFunc(INT func, DWORD index, PDWORD eax, PDWORD edx, DWORD_PTR threadAffinityMask, DWORD pciAddress, BYTE regAddress, WORD port, DWORD value)
-{
-	TCHAR gDriverPath[MAX_PATH];
-	RuningEn(gDriverPath);
-	Driver* pDriver = new Driver(OLS_DRIVER_ID, gDriverPath);
-	HANDLE gHandle = pDriver->GetHandle();
-	if (gHandle == INVALID_HANDLE_VALUE) return FALSE;
-
-	switch (func)
-	{
-	case RD_MSR:
-		Rdmsr(index, eax, edx, gHandle);
-		break;
-	case RD_MSR_TX:
-		RdmsrTx(index, eax, edx, threadAffinityMask, gHandle);
-		break;
-	case READ_PCI_CONFIG_DWORD:
-		ReadPciConfigDword(pciAddress, regAddress, gHandle);
-		break;
-	case READ_IO_PORT_DWORD:
-		ReadIoPortDword(port, gHandle);
-		break;
-	case WRITE_IO_PORT_DWORD:
-		WriteIoPortDword(port, value, gHandle);
-		break;
-	default:
-		break;
-	}
-
-	delete pDriver;
 }

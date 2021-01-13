@@ -8,18 +8,6 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(SolutionDir)Build\VS\Rainmeter.Cpp.props" />
   <Import Project="$(SolutionDir)Build\VS\RainmeterPlugin.Cpp.props" />
@@ -34,8 +22,8 @@
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DriverFunc.h" />
     <ClInclude Include="GetTemp.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="running_environment.h" />
+    <ClInclude Include="sys.h" />
     <ClInclude Include="sys_func.h" />
   </ItemGroup>
   <ItemGroup>
@@ -45,15 +33,11 @@
     <ClCompile Include="GetTemp.cpp" />
     <ClCompile Include="PluginCPUTemp.cpp" />
     <ClCompile Include="running_environment.cpp" />
+    <ClCompile Include="sys.cpp" />
     <ClCompile Include="sys_func.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PluginCPUTemp.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\driver\WinRing0.sys" />
-    <None Include="..\..\driver\WinRing0.vxd" />
-    <None Include="..\..\driver\WinRing0x64.sys" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>

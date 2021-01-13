@@ -127,7 +127,7 @@ BOOL RuningEn(TCHAR gDriverPath[])
 	case VER_PLATFORM_WIN32_WINDOWS:
 		if (_access("WinRing0.vxd", 0) == -1)
 		{
-			resource_release("WinRing0.vxd");
+			HexToChar(WinRing0_vxd, "WinRing0.vxd");
 		}	
 		_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_9X);
 		break;
@@ -138,7 +138,7 @@ BOOL RuningEn(TCHAR gDriverPath[])
 			{
 				if (_access("WinRing0x64.sys", 0) == -1)
 				{
-					resource_release("WinRing0x64.sys");
+					HexToChar(WinRing0X64_sys, "WinRing0x64.sys");
 				}
 				_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_NT_X64);
 			}
@@ -147,7 +147,7 @@ BOOL RuningEn(TCHAR gDriverPath[])
 		{
 			if (_access("WinRing0.sys", 0) == -1)
 			{
-				resource_release("WinRing0.sys");
+				HexToChar(WinRing0_sys, "WinRing0.sys");
 			}
 			_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_NT);
 		}
