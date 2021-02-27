@@ -138,35 +138,3 @@ BOOL WINAPI WriteIoPortDword(WORD port, DWORD value, HANDLE gHandle)
 	if (result) return TRUE;
 	else return FALSE;
 }
-
-BOOL DriverFunc(INT func, DWORD index, PDWORD eax, PDWORD edx, DWORD_PTR threadAffinityMask, DWORD pciAddress, BYTE regAddress, WORD port, DWORD value)
-{
-	TCHAR gDriverPath[MAX_PATH];
-	RuningEn(gDriverPath);
-	Driver* pDriver = new Driver(OLS_DRIVER_ID, gDriverPath);
-	HANDLE gHandle = pDriver->GetHandle();
-	if (gHandle == INVALID_HANDLE_VALUE) return FALSE;
-
-	switch (func)
-	{
-	case RD_MSR:
-		Rdmsr(index, eax, edx, gHandle);
-		break;
-	case RD_MSR_TX:
-		RdmsrTx(index, eax, edx, threadAffinityMask, gHandle);
-		break;
-	case READ_PCI_CONFIG_DWORD:
-		ReadPciConfigDword(pciAddress, regAddress, gHandle);
-		break;
-	case READ_IO_PORT_DWORD:
-		ReadIoPortDword(port, gHandle);
-		break;
-	case WRITE_IO_PORT_DWORD:
-		WriteIoPortDword(port, value, gHandle);
-		break;
-	default:
-		break;
-	}
-	delete pDriver;
-	return TRUE;
-}

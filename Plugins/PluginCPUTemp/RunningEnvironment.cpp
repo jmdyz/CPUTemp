@@ -1,5 +1,5 @@
 #pragma warning(disable:28159)
-#include "running_environment.h"
+#include "RunningEnvironment.h"
 
 
 BOOL IsNT()
@@ -128,7 +128,7 @@ BOOL RuningEn(TCHAR gDriverPath[])
 	case VER_PLATFORM_WIN32_WINDOWS:
 		if (_access("WinRing0.vxd", 0) == -1)
 		{
-			resource_release("WinRing0.vxd");
+			ResourceRelease("WinRing0.vxd");
 		}
 		_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_9X);
 		break;
@@ -139,7 +139,7 @@ BOOL RuningEn(TCHAR gDriverPath[])
 			{
 				if (_access("WinRing0x64.sys", 0) == -1)
 				{
-					resource_release("WinRing0x64.sys");
+					ResourceRelease("WinRing0x64.sys");
 				}
 				_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_NT_X64);
 			}
@@ -148,7 +148,7 @@ BOOL RuningEn(TCHAR gDriverPath[])
 		{
 			if (_access("WinRing0.sys", 0) == -1)
 			{
-				resource_release("WinRing0.sys");
+				ResourceRelease("WinRing0.sys");
 			}
 			_tcscpy_s(gDriverFileName, MAX_PATH, OLS_DRIVER_FILE_NAME_WIN_NT);
 		}

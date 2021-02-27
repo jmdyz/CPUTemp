@@ -18,30 +18,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
-    <ClInclude Include="CPUTempFunc.h" />
-    <ClInclude Include="Driver.h" />
-    <ClInclude Include="DriverFunc.h" />
-    <ClInclude Include="GetTemp.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="running_environment.h" />
-    <ClInclude Include="sys_func.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CPUTempFunc.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DriverFunc.cpp" />
-    <ClCompile Include="GetTemp.cpp" />
     <ClCompile Include="PluginCPUTemp.cpp" />
-    <ClCompile Include="running_environment.cpp" />
-    <ClCompile Include="sys_func.cpp" />
+    <ClCompile Include="RunningEnvironment.cpp" />
+    <ClCompile Include="sysFunc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Driver.h" />
+    <ClInclude Include="DriverFunc.h" />
+    <ClInclude Include="PluginCPUTemp.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="RunningEnvironment.h" />
+    <ClInclude Include="sysFunc.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PluginCPUTemp.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\driver\WinRing0.sys" />
-    <None Include="..\..\driver\WinRing0.vxd" />
-    <None Include="..\..\driver\WinRing0x64.sys" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>

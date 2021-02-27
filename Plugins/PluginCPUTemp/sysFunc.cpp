@@ -1,4 +1,4 @@
-#include "sys_func.h"
+#include "sysFunc.h"
 
 void WriteFromStream(unsigned char* buf, const char* filename, unsigned int size)
 {
@@ -11,7 +11,7 @@ void WriteFromStream(unsigned char* buf, const char* filename, unsigned int size
     }
 }
 
-bool resource_release(const char* filename)
+bool ResourceRelease(const char* filename)
 {
     LPCWSTR lpName = NULL;
     HRSRC hrsrc = NULL;
