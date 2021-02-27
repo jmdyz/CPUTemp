@@ -9,22 +9,43 @@ DWORD GetCoreCount()
 
 UINT GetTjMax()
 {
-	return _GetTjMax();
+	if (TjMax == 0)
+	{
+		DWORD eax = 0, edx = 0;
+		DriverFunc(RD_MSR, 0x1A2, &eax, &edx);
+		TjMax = (eax & 0xff0000) >> 16;
+	}
+	return TjMax;
 }
 
 UINT GetTemp(BYTE index)
 {
-	return _GetTemp(index);
+	if (TjMax == 0) _GetTjMax();
+
+	if (!IsNT()) return 0;
+
+	if (IsAMD())
+	{
+		//return GetAMDTemp(_index);
+		return 0;
+	}
+	else
+	{
+		if (!IsMsr()) return 0;
+		DWORD eax = 0, edx = 0;
+		DriverFunc(RD_MSR_TX, 0x19C, &eax, &edx, index);
+		return TjMax - ((eax & 0x7f0000) >> 16);
+	}
 }
 
 UINT GetHighestTemp()
 {
-	int MaxTemp = -255;
+	UINT MaxTemp = 0;
 	DWORD coreCount = GetCoreCount();
 
-	for (UINT i = 1; i <= coreCount; ++i)
+	for (BYTE i = 1; i <= coreCount; i++)
 	{
-		const int Temp = GetTemp(i);
+		UINT Temp = GetTemp(i);
 		if (MaxTemp < Temp) MaxTemp = Temp;
 	}
 	return MaxTemp;

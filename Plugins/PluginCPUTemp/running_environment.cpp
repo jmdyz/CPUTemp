@@ -1,16 +1,17 @@
-#pragma warning(disable:4996)
+#pragma warning(disable:28159)
 #include "running_environment.h"
 
 
 BOOL IsNT()
 {
-	OSVERSIONINFO osvi;
+	OSVERSIONINFO osvi{};
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	/*
 	dwOSVersionInfoSize
 	以字节为单位，指定这个数据结构的大小。须在调用GetVersionEx（OSVERSIONINFO）函数之前，将这个成员设置为sizeof(OSVERSIONINFO)。
 	*/
 	GetVersionEx(&osvi);
+	//VerifyVersionInfo
 	/*
 	dwPlatformId
 	标识操作系统平台。这个成员可以是下列值之一：
@@ -115,7 +116,7 @@ BOOL RuningEn(TCHAR gDriverPath[])
 	TCHAR gDriverFileName[MAX_PATH];
 	TCHAR dir[MAX_PATH];
 	TCHAR* ptr;
-	OSVERSIONINFO osvi;
+	OSVERSIONINFO osvi{};
 
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	GetVersionEx(&osvi);

@@ -19,21 +19,22 @@ bool resource_release(const char* filename)
     if (filename == "WinRing0.sys") lpName = MAKEINTRESOURCE(IDR_BIN1);
     if (filename == "WinRing0.vxd") lpName = MAKEINTRESOURCE(IDR_BIN2);
     if (filename == "WinRing0x64.sys") lpName = MAKEINTRESOURCE(IDR_BIN3);
-    if (lpName != NULL) hrsrc = FindResource(hInstance, lpName, L"bin");
-    if (hrsrc == NULL)
+    if (lpName != NULL)
     {
-        return false;
+        hrsrc = FindResource(hInstance, lpName, L"bin");
+        if (hrsrc != NULL)
+        {
+            DWORD hrsrc_size = SizeofResource(hInstance, hrsrc);
+            if (hrsrc_size > 0)
+            {
+                HGLOBAL hg = LoadResource(hInstance, hrsrc);
+                if (hg != NULL)
+                {
+                    unsigned char* DATA = (unsigned char*)LockResource(hg);
+                    WriteFromStream(DATA, filename, UINT(hrsrc_size));
+                }
+            }
+        }
     }
-    DWORD hrsrc_size = SizeofResource(hInstance, hrsrc);
-    if (hrsrc_size <= 0)
-    {
-        return false;
-    }
-    HGLOBAL hg = LoadResource(hInstance, hrsrc);
-    if (hg == NULL)
-    {
-        return false;
-    }
-    unsigned char* DATA = (unsigned char*)LockResource(hg);
-    WriteFromStream(DATA, filename, UINT(hrsrc_size));
+    return true;
 }

@@ -54,7 +54,7 @@ BOOL pciConfigRead(DWORD pciAddress, DWORD regAddress, PBYTE value, DWORD size, 
 
 	DWORD	returnedLength = 0;
 	BOOL	result = FALSE;
-	OLS_READ_PCI_CONFIG_INPUT inBuf;
+	OLS_READ_PCI_CONFIG_INPUT inBuf{};
 
 	inBuf.PciAddress = pciAddress;
 	inBuf.PciOffset = regAddress;
@@ -81,7 +81,7 @@ BOOL pciConfigRead(DWORD pciAddress, DWORD regAddress, PBYTE value, DWORD size, 
 
 DWORD WINAPI ReadPciConfigDword(DWORD pciAddress, BYTE regAddress, HANDLE gHandle)
 {
-	DWORD ret;
+	DWORD ret = 0;
 	if (pciConfigRead(pciAddress, regAddress, (PBYTE)&ret, sizeof(ret), NULL, gHandle))
 	{
 		return ret;
@@ -118,7 +118,7 @@ BOOL WINAPI WriteIoPortDword(WORD port, DWORD value, HANDLE gHandle)
 	DWORD	returnedLength = 0;
 	BOOL	result = FALSE;
 	DWORD   length = 0;
-	OLS_WRITE_IO_PORT_INPUT inBuf;
+	OLS_WRITE_IO_PORT_INPUT inBuf{};
 
 	inBuf.LongData = value;
 	inBuf.PortNumber = port;
@@ -167,6 +167,6 @@ BOOL DriverFunc(INT func, DWORD index, PDWORD eax, PDWORD edx, DWORD_PTR threadA
 	default:
 		break;
 	}
-
 	delete pDriver;
+	return TRUE;
 }

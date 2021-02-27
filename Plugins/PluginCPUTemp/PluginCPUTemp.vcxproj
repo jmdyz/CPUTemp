@@ -38,6 +38,11 @@
   <ItemGroup>
     <ResourceCompile Include="PluginCPUTemp.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\driver\WinRing0.sys" />
+    <None Include="..\..\driver\WinRing0.vxd" />
+    <None Include="..\..\driver\WinRing0x64.sys" />
+  </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>

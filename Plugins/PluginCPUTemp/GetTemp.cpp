@@ -1,5 +1,6 @@
 #include "GetTemp.h"
 
+#ifdef _DEBUG
 BOOL get_bus_dev(UINT devieid, INT* BUS, INT* DEV)
 {
 	UINT address, value;
@@ -83,27 +84,35 @@ DWORD GetAMDTemp(DWORD_PTR threadAffinityMask)
 
 	return result;
 }
+#endif
 
 int _GetTjMax()
 {
-	DWORD eax = 0, edx = 0;
-	DriverFunc(RD_MSR, 0x1A2, &eax, &edx);
-	return (eax & 0xff0000) >> 16;
+	if (TjMax == 0)
+	{
+		DWORD eax = 0, edx = 0;
+		DriverFunc(RD_MSR, 0x1A2, &eax, &edx);
+		TjMax = (eax & 0xff0000) >> 16;
+	}
+	return TjMax;
 }
 
 int _GetTemp(int _index)
 {
+	if (TjMax == 0) _GetTjMax();
+
 	if (!IsNT()) return 0;
 
 	if (IsAMD())
 	{
-		return GetAMDTemp(_index);
+		//return GetAMDTemp(_index);
+		return 0;
 	}
 	else
 	{
 		if (!IsMsr()) return 0;
 		DWORD eax = 0, edx = 0;
 		DriverFunc(RD_MSR_TX, 0x19C, &eax, &edx, _index);
-		return _GetTjMax() - ((eax & 0x7f0000) >> 16);
+		return TjMax - ((eax & 0x7f0000) >> 16);
 	}
 }

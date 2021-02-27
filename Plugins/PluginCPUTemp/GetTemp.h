@@ -2,8 +2,7 @@
 
 #include "DriverFunc.h"
 
-
-
+#ifdef _DEBUG
 #define PciBusDevFunc(bus,dev,func)	(((bus&0xFF)<<8) | ((dev&0x1F)<<3) | (func&7))
 #define PciGetBus(address)			((address>>8) & 0xFF)
 #define PciGetDev(address)			((address>>3) & 0x1F)
@@ -15,5 +14,9 @@
 BOOL get_bus_dev(UINT devieid, INT* BUS, INT* DEV);
 DWORD get_temp();
 DWORD GetAMDTemp(DWORD_PTR threadAffinityMask);
+#endif // _DEBUG
+
+int TjMax = 0;
+
 int _GetTjMax();
 int _GetTemp(int _index);

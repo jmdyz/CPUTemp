@@ -34,7 +34,9 @@ BOOL Driver::NewDriver()
 {
 	hSCManager = OpenSCManager(
 		NULL,					//目标计算机名，NULL表示本地计算机
-		NULL,					//服务管理程序系统组件数据库，可以设为SERVICES_ACTIVE_DATABASE，如果为NULL，表示默认打开SERVICES_ACTIVE_DATABASE（服务管理程序系统组件数据库）
+		NULL,					//服务管理程序系统组件数据库，
+		//可以设为SERVICES_ACTIVE_DATABASE，如果为NULL，
+		//表示默认打开SERVICES_ACTIVE_DATABASE（服务管理程序系统组件数据库）
 		SC_MANAGER_ALL_ACCESS	//对SCM的权限（最高权限）
 	);
 #ifdef _DEBUG
@@ -351,7 +353,7 @@ BOOL Driver::EnableSeLoadDriverPrivilege()
 {
 	HANDLE hToken;
 	LUID sedebugnameValue;
-	TOKEN_PRIVILEGES tkp;
+	TOKEN_PRIVILEGES tkp{};
 
 	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
 		return false;

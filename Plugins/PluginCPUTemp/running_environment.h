@@ -5,7 +5,6 @@
 #include <tchar.h>
 #include <io.h>
 
-#include "sys.h"
 #include "sys_func.h"
 
 #define OLS_DRIVER_FILE_NAME_WIN_9X			_T("WinRing0.vxd")

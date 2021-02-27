@@ -1,16 +1,9 @@
-/* Copyright (C) 2011 Rainmeter Project Developers
- *
- * This Source Code Form is subject to the terms of the GNU General Public
- * License; either version 2 of the License, or (at your option) any later
- * version. If a copy of the GPL was not distributed with this file, You can
- * obtain one at <https://www.gnu.org/licenses/gpl-2.0.html>. */
-
 #include <windows.h>
 #include <wchar.h>
 #include "CPUTempFunc.h"
-#include "../../Library/Export.h"	// Rainmeter's exported functions
+#include "../../Library/Export.h"
 
-enum eMeasureType
+enum class eMeasureType
 {
 	MeasureTemperature,
 	MeasureMaxTemperature,
@@ -31,26 +24,46 @@ struct MeasureData
 {
 	eMeasureType type;
 	int index;
-
 	void* rm;
 
 	MeasureData() :
-		type(MeasureTemperature),
+		type(eMeasureType::MeasureTemperature),
 		index(0),
 		rm(nullptr) {}
 };
 
 eMeasureType convertStringToMeasureType(LPCWSTR i_String, void* rm);
-bool areStringsEqual(LPCWSTR i_String1, LPCWSTR i_Strting2);
 
+/************************************************************************
+*
+* 函 数 名：Initialize
+* 函数功能：初始化data，使之成为MeasureData类型数据
+* 输入参数：
+** void** data	数据指针
+** void* rm		Rainmeter运行指针
+* 输出参数：void
+* 返 回 值: void
+*
+************************************************************************/
 PLUGIN_EXPORT void Initialize(void** data, void* rm)
 {
 	MeasureData* measure = new MeasureData;
 	*data = measure;
-
 	measure->rm = rm;
 }
 
+/************************************************************************
+*
+* 函 数 名：Reload
+* 函数功能：读取用户配置参数重载data
+* 输入参数：
+** void* data		数据
+** void* rm			Rainmeter运行指针
+** double* maxValue	未知
+* 输出参数：void
+* 返 回 值: void
+*
+************************************************************************/
 PLUGIN_EXPORT void Reload(void* data, void* rm, double* maxValue)
 {
 	UNREFERENCED_PARAMETER(maxValue);
@@ -61,78 +74,126 @@ PLUGIN_EXPORT void Reload(void* data, void* rm, double* maxValue)
 	measure->index = RmReadInt(rm, L"CPUTempIndex", 1);
 }
 
+ULONGLONG _GetTickCount64()
+{
+	typedef ULONGLONG(WINAPI* FPGETTICKCOUNT64)();
+	static FPGETTICKCOUNT64 c_GetTickCount64 = (FPGETTICKCOUNT64)GetProcAddress(GetModuleHandle(L"kernel32"), "GetTickCount64");
+
+	if (c_GetTickCount64)
+	{
+		return c_GetTickCount64();
+	}
+	else
+	{
+		static ULONGLONG lastTicks = 0;
+		ULONGLONG ticks = GetTickCount();
+		while (ticks < lastTicks) ticks += 0x100000000;
+		lastTicks = ticks;
+		return ticks;
+	}
+}
+
+int temp = 0;
+int cache = 0;
+HANDLE hMutex = nullptr;
+
+DWORD WINAPI Thread(LPVOID data)
+{
+	MeasureData* measure = (MeasureData*)data;
+	WaitForSingleObject(hMutex, INFINITE);
+	if (temp - cache <= 20 || cache - temp <= 20 || temp == 0 || cache == 0)
+	{
+		switch (measure->type)
+		{
+		case eMeasureType::MeasureTemperature:
+		{
+			cache = temp;
+			temp = GetHighestTemp();
+			break;
+		}
+		case eMeasureType::MeasureMaxTemperature:
+		{
+			cache = temp;
+			temp = GetTemp(measure->index);
+			break;
+		}
+		case eMeasureType::MeasureTjMax:
+			temp = GetTjMax();
+			break;
+
+		case eMeasureType::MeasureLoad:
+			break;
+
+		case eMeasureType::MeasureVid:
+			break;
+
+		case eMeasureType::MeasureCpuSpeed:
+			break;
+
+		case eMeasureType::MeasureBusSpeed:
+			break;
+
+		case eMeasureType::MeasureBusMultiplier:
+			break;
+
+		case eMeasureType::MeasureCoreSpeed:
+			break;
+
+		case eMeasureType::MeasureCoreBusMultiplier:
+			break;
+
+		case eMeasureType::MeasureTdp:
+			break;
+
+		case eMeasureType::MeasurePower:
+			break;
+		}
+	}
+	ReleaseMutex(hMutex);
+	return 0L;
+}
+
 PLUGIN_EXPORT double Update(void* data)
 {
-	
 	MeasureData* measure = (MeasureData*)data;
+	static ULONGLONG oldTime = _GetTickCount64();
 	double result = 0;
+	ULONGLONG time = _GetTickCount64();
 
-	switch (measure->type)
+	if (time - oldTime >= 50)
 	{
-	case MeasureTemperature:
-		result = GetTemp(measure->index);
-		break;
-
-	case MeasureMaxTemperature:
-		result = GetHighestTemp();
-		break;
-
-	case MeasureTjMax:
-		result = GetTjMax();
-		break;
-
-	case MeasureLoad:
-		break;
-
-	case MeasureVid:
-		break;
-
-	case MeasureCpuSpeed:
-		break;
-
-	case MeasureBusSpeed:
-		break;
-
-	case MeasureBusMultiplier:
-		break;
-
-	case MeasureCoreSpeed:
-		break;
-
-	case MeasureCoreBusMultiplier:
-		break;
-
-	case MeasureTdp:
-		break;
-
-	case MeasurePower:
-		break;
+		HANDLE hTread = CreateThread(NULL, 0, Thread, data, 0, NULL);
+		if (hTread) CloseHandle(hTread);
+		WaitForSingleObject(hMutex, 50);
+		result = temp;
+		ReleaseMutex(hMutex);
+		oldTime = time;
 	}
 
 	return result;
 }
 
-PLUGIN_EXPORT LPCWSTR GetString(void* data)
-{
-	MeasureData* measure = (MeasureData*)data;
-	static WCHAR buffer[128];
-
-	switch (measure->type)
-	{
-	case MeasureVid:
-		_snwprintf_s(buffer, _TRUNCATE, L"%.4f", 0.0);
-		break;
-
-	case MeasureCpuName:
-		_snwprintf_s(buffer, _TRUNCATE, L"%S", "0");
-		break;
-
-	default:
-		return nullptr;
-	}
-
-	return buffer;
-}
+//PLUGIN_EXPORT LPCWSTR GetString(void* data)
+//{
+//	MeasureData* measure = (MeasureData*)data;
+//	static WCHAR buffer[128];
+//
+//	switch (measure->type)
+//	{
+//	case eMeasureType::MeasureVid:
+//		_snwprintf_s(buffer, _TRUNCATE, L"%.4f", 0.0);
+//		break;
+//
+//	case eMeasureType::MeasureCpuName:
+//		_snwprintf_s(buffer, _TRUNCATE, L"%S", "0");
+//		break;
+//
+//	default:
+//		return nullptr;
+//	}
+//
+//	return buffer;
+//}
 
 PLUGIN_EXPORT void Finalize(void* data)
 {
@@ -151,59 +212,59 @@ eMeasureType convertStringToMeasureType(LPCWSTR i_String, void* rm)
 
 	if (areStringsEqual(i_String, L"Temperature"))
 	{
-		result = MeasureTemperature;
+		result = eMeasureType::MeasureTemperature;
 	}
 	else if (areStringsEqual(i_String, L"MaxTemperature"))
 	{
-		result = MeasureMaxTemperature;
+		result = eMeasureType::MeasureMaxTemperature;
 	}
 	else if (areStringsEqual(i_String, L"TjMax"))
 	{
-		result = MeasureTjMax;
+		result = eMeasureType::MeasureTjMax;
 	}
 	else if (areStringsEqual(i_String, L"Load"))
 	{
-		result = MeasureLoad;
+		result = eMeasureType::MeasureLoad;
 	}
 	else if (areStringsEqual(i_String, L"Vid"))
 	{
-		result = MeasureVid;
+		result = eMeasureType::MeasureVid;
 	}
 	else if (areStringsEqual(i_String, L"CpuSpeed"))
 	{
-		result = MeasureCpuSpeed;
+		result = eMeasureType::MeasureCpuSpeed;
 	}
 	else if (areStringsEqual(i_String, L"BusSpeed"))
 	{
-		result = MeasureBusSpeed;
+		result = eMeasureType::MeasureBusSpeed;
 	}
 	else if (areStringsEqual(i_String, L"BusMultiplier"))
 	{
-		result = MeasureBusMultiplier;
+		result = eMeasureType::MeasureBusMultiplier;
 	}
 	else if (areStringsEqual(i_String, L"CpuName"))
 	{
-		result = MeasureCpuName;
+		result = eMeasureType::MeasureCpuName;
 	}
 	else if (areStringsEqual(i_String, L"CoreSpeed"))
 	{
-		result = MeasureCoreSpeed;
+		result = eMeasureType::MeasureCoreSpeed;
 	}
 	else if (areStringsEqual(i_String, L"CoreBusMultiplier"))
 	{
-		result = MeasureCoreBusMultiplier;
+		result = eMeasureType::MeasureCoreBusMultiplier;
 	}
 	else if (areStringsEqual(i_String, L"Tdp"))
 	{
-		result = MeasureTdp;
+		result = eMeasureType::MeasureTdp;
 	}
 	else if (areStringsEqual(i_String, L"Power"))
 	{
-		result = MeasurePower;
+		result = eMeasureType::MeasurePower;
 	}
 	else
 	{
-		result = MeasureTemperature;
+		result = eMeasureType::MeasureTemperature;
 		RmLogF(rm, LOG_WARNING, L"无效的CPUTempType: %s", i_String);
 	}
 

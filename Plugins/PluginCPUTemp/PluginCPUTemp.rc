@@ -25,21 +25,21 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE
+1 TEXTINCLUDE 
 BEGIN
-"resource.h\0"
+    "resource.h\0"
 END
 
-2 TEXTINCLUDE
+2 TEXTINCLUDE 
 BEGIN
-"#include ""winres.h""\r\n"
-"\0"
+    "#include ""winres.h""\r\n"
+    "\0"
 END
 
-3 TEXTINCLUDE
+3 TEXTINCLUDE 
 BEGIN
-"\r\n"
-"\0"
+    "\r\n"
+    "\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -47,14 +47,14 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// bin
+// BIN
 //
 
-IDR_BIN1                bin                     "D:\\Work\\Programming\\C&C++\\CPUTemp\\driver\\WinRing0.sys"
+IDR_BIN1                BIN                     "D:\\Work\\Programming\\C&C++\\CPUTemp\\driver\\WinRing0.sys"
 
-IDR_BIN2                bin                     "D:\\Work\\Programming\\C&C++\\CPUTemp\\driver\\WinRing0.vxd"
+IDR_BIN2                BIN                     "D:\\Work\\Programming\\C&C++\\CPUTemp\\driver\\WinRing0.vxd"
 
-IDR_BIN3                bin                     "D:\\Work\\Programming\\C&C++\\CPUTemp\\driver\\WinRing0x64.sys"
+IDR_BIN3                BIN                     "D:\\Work\\Programming\\C&C++\\CPUTemp\\driver\\WinRing0x64.sys"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -63,35 +63,35 @@ IDR_BIN3                bin                     "D:\\Work\\Programming\\C&C++\\C
 //
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 0, 6, 0
-PRODUCTVERSION 1, 0, 6, 0
-FILEFLAGSMASK 0x3fL
+ FILEVERSION 1,0,7,0
+ PRODUCTVERSION 1,0,7,0
+ FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
-FILEFLAGS 0x1L
+ FILEFLAGS 0x1L
 #else
-FILEFLAGS 0x0L
+ FILEFLAGS 0x0L
 #endif
-FILEOS 0x40004L
-FILETYPE 0x2L
-FILESUBTYPE 0x0L
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
 BEGIN
-BLOCK "StringFileInfo"
-BEGIN
-BLOCK "080404b0"
-BEGIN
-VALUE "CompanyName", "jmdyz"
-VALUE "FileVersion", "1.0.6.0"
-VALUE "InternalName", "CPUTemp.dll"
-VALUE "LegalCopyright", "Copyright (C) jmdyz"
-VALUE "OriginalFilename", "CPUTemp.dll"
-VALUE "ProductName", "CPUTemp.dll"
-VALUE "ProductVersion", "1.0.6.0"
-END
-END
-BLOCK "VarFileInfo"
-BEGIN
-VALUE "Translation", 0x804, 1200
-END
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404b0"
+        BEGIN
+            VALUE "CompanyName", "jmdyz"
+            VALUE "FileVersion", "1.0.7.0"
+            VALUE "InternalName", "CPUTemp.dll"
+            VALUE "LegalCopyright", "Copyright (C) jmdyz"
+            VALUE "OriginalFilename", "CPUTemp.dll"
+            VALUE "ProductName", "CPUTemp.dll"
+            VALUE "ProductVersion", "1.0.7.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
 END
 
 #endif    // 中文(简体，中国) resources
